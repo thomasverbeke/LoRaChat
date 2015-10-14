@@ -52,7 +52,8 @@
 				- Frequency Hopping, switch between frequencies in lookup table to comply with ETSI regulations
 				- Adaptive Rate Control, based on SNR switch to different spreading factor
 				- Addressing
-				- Encryption """
+				- Encryption 
+                - Limit retransmissions """
 
 import serial
 import sys
@@ -162,15 +163,21 @@ while True:
     else:
         
         if msg == 'radio_rx  48656C6C6F\r\n':
-            print("HELLO")
+            print("<INCOMING MESSAGE>HELLO")
 
-            ser.write("radio tx 41434b0d0a\r\n")
+            ser.write("radio tx 48656C6C6F\r\n")
             response = ser.readline()
+            print "<OUTGOING MESSAGE>ACK"
+            #if response == "ok\r\n":
+            #    print("ACK (in hex: 41 43 4b 0d 0a) has been sent")
+            #else:
+            #    print("Error")
+        elif msg == 'radio_tx_ok\r\n':
+            print("radio_tx_ok (ACK transmission ok)")
 
-            if response == "ok\r\n":
-                print("ACK (in hex: 41 43 4b 0d 0a) has been send")
-            else:
-                print("Error")
+            #pol frequency, check if same weird freq behaviour
+            #ser.write("radio get freq\r\n") #and put back into receive mode
+            #print ser.readline()
 
             ser.write("radio rx 0\r\n") #and put back into receive mode
 
@@ -180,6 +187,13 @@ while True:
                 print("<radio rx 0> Busy")
             else:
                 print("Error")
+
+        elif msg == 'radio_err\r\n':
+            print("radio_error (transmission failed)")
+
+            #retransmit x?? times
+            ser.write("radio tx 41434b0d0a\r\n")
+            response = ser.readline() #ignore first feedback
         else:
             print(msg)
         
